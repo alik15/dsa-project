@@ -32,12 +32,12 @@ func main() {
 	}
 
 	// Book a seat on the flight
-	if err := bookSeat(db, 1, 3); err != nil {
+	if err := bookSeat(db, 1, 06); err != nil {
 		log.Fatal(err)
 	}
 
 	// Check status of a seat
-	status, err := checkSeatStatus(db, 1, 1)
+	status, err := checkSeatStatus(db, 1, 3000)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -133,14 +133,26 @@ func bookSeat(db *sql.DB, flightID, seatNo int) error {
 
 // Function to check the status of a seat (if it is already booked or not)
 func checkSeatStatus(db *sql.DB, flightID, seatNo int) (bool, error) {
-	// Retrieve seat status
-	var booked bool
-	err := db.QueryRow("SELECT booked FROM seats WHERE flight_id = ? AND seat_no = ?", flightID, seatNo).Scan(&booked)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false, fmt.Errorf("seat %d is not available", seatNo)
+	if seatNo >= 1 && seatNo <= 500 {
+		// Check if the seat exists
+		var exists bool
+		err := db.QueryRow("SELECT EXISTS (SELECT 1 FROM seats WHERE flight_id = ? AND seat_no = ?)", flightID, seatNo).Scan(&exists)
+		if err != nil {
+			return false, err
 		}
-		return false, err
+		if !exists {
+			return false, nil // Seat does not exist, return false
+		}
+
+		// Retrieve seat status
+		var booked bool
+		err = db.QueryRow("SELECT booked FROM seats WHERE flight_id = ? AND seat_no = ?", flightID, seatNo).Scan(&booked)
+		if err != nil {
+			return false, err
+		}
+		return booked, nil
 	}
-	return booked, nil
+
+	// Seats outside the range 1 to 500 are assumed to be unavailable
+	return false, nil
 }
