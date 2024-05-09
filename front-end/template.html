@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example</title>
+</head>
+<body>
+    <form id="myForm">
+        <input type="hidden" name="hidden_field" id="hiddenField" value="{{.HiddenValue}}">
+        <button type="button" onclick="sendRequest()">Submit</button>
+    </form>
+
+    <script>
+        function sendRequest() {
+            var hiddenValue = document.getElementById("hiddenField").value;
+
+            // Make an AJAX request to send the hidden value
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/submit", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // Handle the response if needed
+                    console.log(xhr.responseText);
+                }
+            };
+            xhr.send("hidden_field=" + encodeURIComponent(hiddenValue));
+        }
+    </script>
+</body>
+</html>
